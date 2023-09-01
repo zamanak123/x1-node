@@ -408,6 +408,7 @@ func (s *ClientSynchronizer) processBlockRange(blocks []etherman.Block, order ma
 			return err
 		}
 		for _, element := range order[blocks[i].BlockHash] {
+			startTime := time.Now()
 			switch element.Name {
 			case etherman.SequenceBatchesOrder:
 				err = s.processSequenceBatches(blocks[i].SequencedBatches[element.Pos], blocks[i].BlockNumber, dbTx)
@@ -440,6 +441,8 @@ func (s *ClientSynchronizer) processBlockRange(blocks []etherman.Block, order ma
 					return err
 				}
 			}
+			elapsed := time.Now().Sub(startTime).Milliseconds()
+			log.Infof("Elapsed:%s %v(ms), block num:%d", element.Name, elapsed, blocks[i].BlockNumber)
 		}
 		err = dbTx.Commit(s.ctx)
 		if err != nil {

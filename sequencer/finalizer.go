@@ -183,7 +183,10 @@ func (f *finalizer) finalizeBatches(ctx context.Context) {
 
 			f.sharedResourcesMux.Lock()
 			log.Debugf("processing tx: %s", tx.Hash.Hex())
+			startTime := time.Now()
 			_, err := f.processTransaction(ctx, tx)
+			elapsed := time.Now().Sub(startTime).Milliseconds()
+			log.Infof("Elapsed: processTransaction: %v(ms), hash:%s", elapsed, tx.Hash.String())
 			if err != nil {
 				log.Errorf("failed to process transaction in finalizeBatches, Err: %v", err)
 			}
@@ -286,7 +289,10 @@ func (f *finalizer) newWIPBatch(ctx context.Context) (*WipBatch, error) {
 	// We need to process the batch to update the state root before closing the batch
 	if f.batch.initialStateRoot == f.batch.stateRoot {
 		log.Info("reprocessing batch because the state root has not changed...")
+		startTime := time.Now()
 		_, err = f.processTransaction(ctx, nil)
+		elapsed := time.Now().Sub(startTime).Milliseconds()
+		log.Infof("Elapsed: processTransaction: %v(ms), hash:nil", elapsed)
 		if err != nil {
 			return nil, err
 		}
