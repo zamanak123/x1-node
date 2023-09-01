@@ -784,7 +784,10 @@ func (f *finalizer) reprocessFullBatch(ctx context.Context, batchNum uint64, exp
 		log.Infof("reprocessFullBatch: Tx position %d. TxHash: %s", i, tx.Hash())
 	}
 
+	startTime := time.Now()
 	result, err := f.executor.ProcessBatch(ctx, processRequest, false)
+	elapsed := time.Now().Sub(startTime).Milliseconds()
+	log.Infof("Elapsed: process batch: %v(ms), batch num:%d", elapsed, processRequest.BatchNumber)
 	if err != nil {
 		log.Errorf("failed to process batch, err: %s", err)
 		return nil, err
