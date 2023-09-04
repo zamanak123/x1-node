@@ -175,8 +175,11 @@ func (f *finalizer) finalizeBatches(ctx context.Context) {
 		start := now()
 		tx := f.worker.GetBestFittingTx(f.batch.remainingResources)
 		metrics.WorkerProcessingTime(time.Since(start))
-		elapsed := time.Now().Sub(start).Milliseconds()
-		log.Infof("Elapsed: get best fitting tx: %v(ms), hash:%s", elapsed, tx.Hash.String())
+		if tx != nil {
+			elapsed := time.Now().Sub(start).Milliseconds()
+			log.Infof("Elapsed: get best fitting tx: %v(ms), hash:%s", elapsed, tx.Hash.String())
+		}
+
 		if tx != nil {
 			// Timestamp resolution
 			if f.batch.isEmpty() {
