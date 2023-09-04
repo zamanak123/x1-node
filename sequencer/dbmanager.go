@@ -174,6 +174,7 @@ func (d *dbManager) storeProcessedTxAndDeleteFromPool() {
 		txToStore := <-d.txsStore.Ch
 		d.checkIfReorg()
 
+		start := time.Now()
 		// Flush the state db
 		err := d.state.FlushMerkleTree(d.ctx)
 		if err != nil {
@@ -221,6 +222,8 @@ func (d *dbManager) storeProcessedTxAndDeleteFromPool() {
 			log.Fatalf("StoreProcessedTxAndDeleteFromPool: %v", err)
 		}
 
+		elapsed := time.Now().Sub(start).Milliseconds()
+		log.Infof("Elapsed: store processed tx delete from pool: %v(ms), tx:%v", elapsed, txToStore.txResponse.TxHash.String())
 		log.Infof("StoreProcessedTxAndDeleteFromPool: successfully stored tx: %v for batch: %v", txToStore.txResponse.TxHash.String(), txToStore.batchNumber)
 		d.txsStore.Wg.Done()
 	}

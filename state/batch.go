@@ -263,7 +263,7 @@ func (s *State) ExecuteBatch(ctx context.Context, batch Batch, updateMerkleTree 
 	startTime := time.Now()
 	processBatchResponse, err := s.executorClient.ProcessBatch(ctx, processBatchRequest)
 	elapsed := time.Now().Sub(startTime).Milliseconds()
-	log.Infof("Elapsed: process batch: %v(ms), old batch num:%v, tx size:%d", elapsed, processBatchRequest.OldBatchNum, len(previousBatch.BatchL2Data))
+	log.Infof("Elapsed: process batch: %v(ms), old batch:%v, tx nums:%d", elapsed, processBatchRequest.OldBatchNum, len(batch.Transactions))
 	if err != nil {
 		log.Error("error executing batch: ", err)
 		return nil, err
@@ -366,7 +366,9 @@ func (s *State) sendBatchRequestToExecutor(ctx context.Context, processBatchRequ
 	if caller != metrics.DiscardCallerLabel {
 		metrics.ExecutorProcessingTime(string(caller), elapsed)
 	}
-	log.Infof("Elapsed: process batch: %v(ms), old batch:%d, tx size:%d", elapsed, processBatchRequest.OldBatchNum, len(processBatchRequest.BatchL2Data))
+
+	txs, _, _ := DecodeTxs(processBatchRequest.BatchL2Data)
+	log.Infof("Elapsed: process batch: %v(ms), old batch:%d, tx nums:%d", elapsed, processBatchRequest.OldBatchNum, len(txs))
 
 	return res, err
 }

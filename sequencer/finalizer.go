@@ -252,6 +252,9 @@ func (f *finalizer) finalizeBatch(ctx context.Context) {
 		log.Errorf("failed to create new work-in-progress batch, Err: %s", err)
 		f.batch, err = f.newWIPBatch(ctx)
 	}
+
+	elapsed := time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: finalize batch: %v(ms), new batchNumber:%d", elapsed, f.batch.batchNumber)
 }
 
 func (f *finalizer) halt(ctx context.Context, err error) {
@@ -787,7 +790,7 @@ func (f *finalizer) reprocessFullBatch(ctx context.Context, batchNum uint64, exp
 	startTime := time.Now()
 	result, err := f.executor.ProcessBatch(ctx, processRequest, false)
 	elapsed := time.Now().Sub(startTime).Milliseconds()
-	log.Infof("Elapsed: process batch: %v(ms), old batch num:%d, tx size:%d", elapsed, processRequest.BatchNumber, len(processRequest.Transactions))
+	log.Infof("Elapsed: process batch: %v(ms), old batch:%d, tx nums:%d", elapsed, processRequest.BatchNumber, len(processRequest.Transactions))
 	if err != nil {
 		log.Errorf("failed to process batch, err: %s", err)
 		return nil, err
