@@ -359,6 +359,8 @@ func (c *Client) monitorTxs(ctx context.Context) error {
 
 			// sign tx
 			signedTx, err = c.etherman.SignTx(ctx, mTx.from, tx)
+			mTxLog.Debugf("signed tx: %v", signedTx)
+			mTxLog.Debugf("tx: %v", tx)
 			if err != nil {
 				mTxLog.Errorf("failed to sign tx %v created from monitored tx %v: %v", tx.Hash().String(), mTx.id, err)
 				continue
