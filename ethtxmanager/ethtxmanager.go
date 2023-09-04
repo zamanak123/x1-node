@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"time"
 
@@ -360,14 +359,8 @@ func (c *Client) monitorTxs(ctx context.Context) error {
 
 			// sign tx
 			signedTx, err = c.etherman.SignTx(ctx, mTx.from, tx)
-			data, err := signedTx.MarshalBinary()
-			//	if err != nil {
-			//		return err
-			//	}
-			//	return ec.c.CallContext(ctx, nil, "eth_sendRawTransaction", hexutil.Encode(data))
-
-			mTxLog.Debugf("signed tx: %s", hexutil.Encode(data))
-			mTxLog.Debugf("tx: %v", tx)
+			//data, err := signedTx.MarshalBinary()
+			//mTxLog.Debugf("signed tx: %s", hexutil.Encode(data))
 			if err != nil {
 				mTxLog.Errorf("failed to sign tx %v created from monitored tx %v: %v", tx.Hash().String(), mTx.id, err)
 				continue
