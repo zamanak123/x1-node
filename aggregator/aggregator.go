@@ -318,7 +318,7 @@ func (a *Aggregator) buildFinalProof(ctx context.Context, prover proverInterface
 	start := time.Now()
 	finalProofID, err := prover.FinalProof(proof.Proof, a.cfg.SenderAddress)
 	elapsed := time.Now().Sub(start).Milliseconds()
-	log.Infof("Elapsed: buildFinalProof - final proof %v(ms), proof id:%v", elapsed, *proof.ProofID)
+	log.Infof("Elapsed: buildFinalProof - final proof %v, proof id:%v", elapsed, *proof.ProofID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get final proof id: %w", err)
 	}
@@ -330,7 +330,7 @@ func (a *Aggregator) buildFinalProof(ctx context.Context, prover proverInterface
 	start = time.Now()
 	finalProof, err := prover.WaitFinalProof(ctx, *proof.ProofID)
 	elapsed = time.Now().Sub(start).Milliseconds()
-	log.Infof("Elapsed: buildFinalProof - wait final proof %v(ms), proof id:%v", elapsed, *proof.ProofID)
+	log.Infof("Elapsed: buildFinalProof - wait final proof %v, proof id:%v", elapsed, *proof.ProofID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get final proof from prover: %w", err)
 	}
