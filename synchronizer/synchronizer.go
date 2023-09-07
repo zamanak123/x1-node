@@ -442,7 +442,7 @@ func (s *ClientSynchronizer) processBlockRange(blocks []etherman.Block, order ma
 				}
 			}
 			elapsed := time.Now().Sub(startTime).Milliseconds()
-			log.Infof("Elapsed: range order:%s %v(ms), block num:%d", element.Name, elapsed, blocks[i].BlockNumber)
+			log.Infof("Elapsed: range order:%s %v, block num:%d", element.Name, elapsed, blocks[i].BlockNumber)
 		}
 		err = dbTx.Commit(s.ctx)
 		if err != nil {

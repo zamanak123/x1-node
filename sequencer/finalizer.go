@@ -177,7 +177,7 @@ func (f *finalizer) finalizeBatches(ctx context.Context) {
 		metrics.WorkerProcessingTime(time.Since(start))
 		if tx != nil {
 			elapsed := time.Now().Sub(start).Milliseconds()
-			log.Infof("Elapsed: get best fitting tx: %v(ms), hash:%s", elapsed, tx.Hash.String())
+			log.Infof("Elapsed: get best fitting tx from db, %v, hash:%s", elapsed, tx.Hash.String())
 		}
 
 		if tx != nil {
@@ -191,7 +191,7 @@ func (f *finalizer) finalizeBatches(ctx context.Context) {
 			startTime := time.Now()
 			_, err := f.processTransaction(ctx, tx)
 			elapsed := time.Now().Sub(startTime).Milliseconds()
-			log.Infof("Elapsed: processTransaction: %v(ms), hash:%s", elapsed, tx.Hash.String())
+			log.Infof("Elapsed: process transaction:%v, hash:%s", elapsed, tx.Hash.String())
 			if err != nil {
 				log.Errorf("failed to process transaction in finalizeBatches, Err: %v", err)
 			}
@@ -259,7 +259,7 @@ func (f *finalizer) finalizeBatch(ctx context.Context) {
 	}
 
 	elapsed := time.Now().Sub(start).Milliseconds()
-	log.Infof("Elapsed: finalize batch: %v(ms), new batchNumber:%d", elapsed, f.batch.batchNumber)
+	log.Infof("Elapsed: finalize batch: %v, new batchNumber:%d", elapsed, f.batch.batchNumber)
 }
 
 func (f *finalizer) halt(ctx context.Context, err error) {
@@ -300,7 +300,7 @@ func (f *finalizer) newWIPBatch(ctx context.Context) (*WipBatch, error) {
 		startTime := time.Now()
 		_, err = f.processTransaction(ctx, nil)
 		elapsed := time.Now().Sub(startTime).Milliseconds()
-		log.Infof("Elapsed: processTransaction: %v(ms), hash:nil", elapsed)
+		log.Infof("Elapsed: process nil transaction: %v", elapsed)
 		if err != nil {
 			return nil, err
 		}
@@ -769,6 +769,7 @@ func (f *finalizer) openBatch(ctx context.Context, num uint64, ger common.Hash, 
 
 // reprocessBatch reprocesses a batch used as sanity check
 func (f *finalizer) reprocessFullBatch(ctx context.Context, batchNum uint64, expectedStateRoot common.Hash) (*state.ProcessBatchResponse, error) {
+	startTime := time.Now()
 	batch, err := f.dbManager.GetBatchByNumber(ctx, batchNum, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get batch by number, err: %v", err)
@@ -792,10 +793,8 @@ func (f *finalizer) reprocessFullBatch(ctx context.Context, batchNum uint64, exp
 		log.Infof("reprocessFullBatch: Tx position %d. TxHash: %s", i, tx.Hash())
 	}
 
-	startTime := time.Now()
 	result, err := f.executor.ProcessBatch(ctx, processRequest, false)
-	elapsed := time.Now().Sub(startTime).Milliseconds()
-	log.Infof("Elapsed: process batch: %v(ms), old batch:%d, tx nums:%d", elapsed, processRequest.BatchNumber, len(processRequest.Transactions))
+
 	if err != nil {
 		log.Errorf("failed to process batch, err: %s", err)
 		return nil, err
@@ -828,6 +827,9 @@ func (f *finalizer) reprocessFullBatch(ctx context.Context, batchNum uint64, exp
 		log.Errorf("batchNumber: %d, reprocessed batch has different state root, expected: %s, got: %s", batch.BatchNumber, expectedStateRoot.Hex(), result.NewStateRoot.Hex())
 		return nil, fmt.Errorf("batchNumber: %d, reprocessed batch has different state root, expected: %s, got: %s", batch.BatchNumber, expectedStateRoot.Hex(), result.NewStateRoot.Hex())
 	}
+
+	elapsed := time.Now().Sub(startTime).Milliseconds()
+	log.Infof("Elapsed: reprocess full batch: %v, old batch:%d, tx nums:%d", elapsed, processRequest.BatchNumber, len(processRequest.Transactions))
 
 	return result, nil
 }

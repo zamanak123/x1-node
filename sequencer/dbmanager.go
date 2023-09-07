@@ -127,7 +127,10 @@ func (d *dbManager) loadFromPool() {
 		}
 
 		for _, tx := range poolTransactions {
+			start := now()
 			err := d.addTxToWorker(tx)
+			elapsed := time.Now().Sub(start).Milliseconds()
+			log.Infof("Elapsed: load tx from db to memory: %v, hash:%s", elapsed, tx.Hash().String())
 			if err != nil {
 				log.Errorf("error adding transaction to worker: %v", err)
 			}
@@ -223,7 +226,7 @@ func (d *dbManager) storeProcessedTxAndDeleteFromPool() {
 		}
 
 		elapsed := time.Now().Sub(start).Milliseconds()
-		log.Infof("Elapsed: store processed tx delete from pool: %v(ms), tx:%v", elapsed, txToStore.txResponse.TxHash.String())
+		log.Infof("Elapsed: store processed tx delete from pool: %v, tx:%v", elapsed, txToStore.txResponse.TxHash.String())
 		log.Infof("StoreProcessedTxAndDeleteFromPool: successfully stored tx: %v for batch: %v", txToStore.txResponse.TxHash.String(), txToStore.batchNumber)
 		d.txsStore.Wg.Done()
 	}

@@ -287,7 +287,7 @@ func (s *State) DebugTransaction(ctx context.Context, transactionHash common.Has
 	startTime := time.Now()
 	processBatchResponse, err := s.executorClient.ProcessBatch(ctx, processBatchRequest)
 	elapsed := time.Now().Sub(startTime).Milliseconds()
-	log.Infof("Elapsed: process batch, debug transaction: %v(ms), old batch:%d, tx nums:1", elapsed, processBatchRequest.OldBatchNum)
+	log.Infof("Elapsed: process batch, debug transaction: %v, tx hash:%s", elapsed, tx.Hash().String())
 	endTime := time.Now()
 	if err != nil {
 		return nil, err
@@ -791,10 +791,7 @@ func (s *State) internalProcessUnsignedTransaction(ctx context.Context, tx *type
 	log.Debugf("internalProcessUnsignedTransaction[processBatchRequest.ForkId]: %v", processBatchRequest.ForkId)
 
 	// Send Batch to the Executor
-	startTime := time.Now()
 	processBatchResponse, err := s.executorClient.ProcessBatch(ctx, processBatchRequest)
-	elapsed := time.Now().Sub(startTime).Milliseconds()
-	log.Infof("Elapsed: process batch, internal process unsigned transaction: %v(ms), old batch:%d, tx nums:1", elapsed, processBatchRequest.OldBatchNum)
 	if err != nil {
 		// Log this error as an executor unspecified error
 		s.eventLog.LogExecutorError(ctx, pb.ExecutorError_EXECUTOR_ERROR_UNSPECIFIED, processBatchRequest)
@@ -1010,10 +1007,7 @@ func (s *State) EstimateGas(transaction *types.Transaction, senderAddress common
 		log.Debugf("EstimateGas[processBatchRequest.ChainId]: %v", processBatchRequest.ChainId)
 		log.Debugf("EstimateGas[processBatchRequest.ForkId]: %v", processBatchRequest.ForkId)
 
-		txExecutionOnExecutorTime := time.Now()
 		processBatchResponse, err := s.executorClient.ProcessBatch(ctx, processBatchRequest)
-		elapsed := time.Now().Sub(txExecutionOnExecutorTime).Milliseconds()
-		log.Infof("Elapsed: process batch, estimate gas: %v(ms), old batch:%d, tx nums:1", elapsed, processBatchRequest.OldBatchNum)
 		if err != nil {
 			log.Errorf("error estimating gas: %v", err)
 			return false, false, gasUsed, nil, err
