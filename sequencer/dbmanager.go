@@ -127,7 +127,7 @@ func (d *dbManager) loadFromPool() {
 		}
 
 		for _, tx := range poolTransactions {
-			start := now()
+			start := time.Now()
 			err := d.addTxToWorker(tx)
 			elapsed := time.Now().Sub(start).Milliseconds()
 			log.Infof("Elapsed: load tx from db to memory: %v, hash:%s", elapsed, tx.Hash().String())

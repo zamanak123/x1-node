@@ -315,8 +315,10 @@ func (a *Aggregator) buildFinalProof(ctx context.Context, prover proverInterface
 		"batches", fmt.Sprintf("%d-%d", proof.BatchNumber, proof.BatchNumberFinal),
 	)
 	log.Info("Generating final proof")
-
+	start := time.Now()
 	finalProofID, err := prover.FinalProof(proof.Proof, a.cfg.SenderAddress)
+	elapsed := time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: buildFinalProof - final proof %v(ms), proof id:%v", elapsed, *proof.ProofID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get final proof id: %w", err)
 	}
@@ -325,7 +327,10 @@ func (a *Aggregator) buildFinalProof(ctx context.Context, prover proverInterface
 	log.Infof("Final proof ID for batches [%d-%d]: %s", proof.BatchNumber, proof.BatchNumberFinal, *proof.ProofID)
 	log = log.WithFields("finalProofId", finalProofID)
 
+	start = time.Now()
 	finalProof, err := prover.WaitFinalProof(ctx, *proof.ProofID)
+	elapsed = time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: buildFinalProof - wait final proof %v(ms), proof id:%v", elapsed, *proof.ProofID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get final proof from prover: %w", err)
 	}
@@ -644,7 +649,10 @@ func (a *Aggregator) tryAggregateProofs(ctx context.Context, prover proverInterf
 		InputProver:      string(b),
 	}
 
+	start := time.Now()
 	aggrProofID, err = prover.AggregatedProof(proof1.Proof, proof2.Proof)
+	elapsed := time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: tryAggregateProofs-aggregated proof:%v, aggr proof id:%v", elapsed, *aggrProofID)
 	if err != nil {
 		err = fmt.Errorf("failed to get aggregated proof id, %w", err)
 		log.Error(FirstToUpper(err.Error()))
@@ -656,7 +664,10 @@ func (a *Aggregator) tryAggregateProofs(ctx context.Context, prover proverInterf
 	log.Infof("Proof ID for aggregated proof: %v", *proof.ProofID)
 	log = log.WithFields("proofId", *proof.ProofID)
 
+	start = time.Now()
 	recursiveProof, err := prover.WaitRecursiveProof(ctx, *proof.ProofID)
+	elapsed = time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: tryAggregateProofs - wait recursive proof:%v, aggr proof id:%v", elapsed, *aggrProofID)
 	if err != nil {
 		err = fmt.Errorf("failed to get aggregated proof from prover, %w", err)
 		log.Error(FirstToUpper(err.Error()))
@@ -664,7 +675,7 @@ func (a *Aggregator) tryAggregateProofs(ctx context.Context, prover proverInterf
 	}
 
 	log.Info("Aggregated proof generated")
-
+	start = time.Now()
 	proof.Proof = recursiveProof
 
 	// update the state by removing the 2 aggregated proofs and storing the
@@ -734,7 +745,8 @@ func (a *Aggregator) tryAggregateProofs(ctx context.Context, prover proverInterf
 			return false, err
 		}
 	}
-
+	elapsed = time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: tryAggregateProofs - save proof to db:%v, aggr proof id:%v", elapsed, proof.ProofID)
 	return true, nil
 }
 
@@ -822,7 +834,6 @@ func (a *Aggregator) tryGenerateBatchProof(ctx context.Context, prover proverInt
 		genProofID *string
 		err        error
 	)
-
 	defer func() {
 		if err != nil {
 			err2 := a.State.DeleteGeneratedProofs(a.ctx, proof.BatchNumber, proof.BatchNumberFinal, nil)
@@ -855,7 +866,10 @@ func (a *Aggregator) tryGenerateBatchProof(ctx context.Context, prover proverInt
 	log.Infof("Sending a batch to the prover. OldStateRoot [%#x], OldBatchNum [%d]",
 		inputProver.PublicInputs.OldStateRoot, inputProver.PublicInputs.OldBatchNum)
 
+	start := time.Now()
 	genProofID, err = prover.BatchProof(inputProver)
+	elapsed := time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: tryGenerateBatchProof - batch proof %v, proof id:%s", elapsed, *proof.ProofID)
 	if err != nil {
 		err = fmt.Errorf("failed to get batch proof id, %w", err)
 		log.Error(FirstToUpper(err.Error()))
@@ -867,7 +881,10 @@ func (a *Aggregator) tryGenerateBatchProof(ctx context.Context, prover proverInt
 	log.Infof("Proof ID %v", *proof.ProofID)
 	log = log.WithFields("proofId", *proof.ProofID)
 
+	start = time.Now()
 	resGetProof, err := prover.WaitRecursiveProof(ctx, *proof.ProofID)
+	elapsed = time.Now().Sub(start).Milliseconds()
+	log.Infof("Elapsed: tryGenerateBatchProof - wait recursive proof, %v, proof id:%s", elapsed, *proof.ProofID)
 	if err != nil {
 		err = fmt.Errorf("failed to get proof from prover, %w", err)
 		log.Error(FirstToUpper(err.Error()))
