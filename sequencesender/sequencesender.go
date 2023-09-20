@@ -130,6 +130,7 @@ func (s *SequenceSender) getSequencesToSend(ctx context.Context) ([]types.Sequen
 	if err != nil {
 		return nil, fmt.Errorf("failed to get last virtual batch num, err: %w", err)
 	}
+	fmt.Printf("-------lastViertualBatchNum %d \n", lastVirtualBatchNum)
 
 	currentBatchNumToSequence := lastVirtualBatchNum + 1
 	sequences := []types.Sequence{}
@@ -178,6 +179,9 @@ func (s *SequenceSender) getSequencesToSend(ctx context.Context) ([]types.Sequen
 		sequences = append(sequences, seq)
 		// Check if can be send
 		tx, err = s.etherman.EstimateGasSequenceBatches(s.cfg.SenderAddress, sequences, s.cfg.L2Coinbase)
+		fmt.Printf("--------- sender address %s \n", s.cfg.SenderAddress.String())
+		fmt.Printf("--------- sequences %v \n", sequences)
+		fmt.Printf("--------- l2 coinbase %v \n", s.cfg.L2Coinbase)
 		if err == nil && tx.Size() > s.cfg.MaxTxSizeForL1 {
 			metrics.SequencesOvesizedDataError()
 			log.Infof("oversized Data on TX oldHash %s (txSize %d > %d)", tx.Hash(), tx.Size(), s.cfg.MaxTxSizeForL1)
