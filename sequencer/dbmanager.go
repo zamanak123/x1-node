@@ -2,13 +2,13 @@ package sequencer
 
 import (
 	"context"
-	"github.com/0xPolygonHermez/zkevm-node/sequencer/metrics"
 	"math/big"
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-data-streamer/datastreamer"
 	"github.com/0xPolygonHermez/zkevm-node/log"
 	"github.com/0xPolygonHermez/zkevm-node/pool"
+	"github.com/0xPolygonHermez/zkevm-node/sequencer/metrics"
 	"github.com/0xPolygonHermez/zkevm-node/state"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -150,8 +150,10 @@ func (d *dbManager) loadFromPool() {
 	}
 }
 
+var countinterval = 10
+
 func (d *dbManager) countPendingTx() {
-	ticker := time.NewTicker(time.Second * 10)
+	ticker := time.NewTicker(time.Second * time.Duration(countinterval))
 	for {
 		select {
 		case <-ticker.C:
