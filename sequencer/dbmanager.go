@@ -153,17 +153,14 @@ func (d *dbManager) loadFromPool() {
 var countinterval = 10
 
 func (d *dbManager) countPendingTx() {
-	ticker := time.NewTicker(time.Second * time.Duration(countinterval))
 	for {
-		select {
-		case <-ticker.C:
-			transactions, err := d.txPool.CountPendingTransactions(d.ctx)
-			if err != nil {
-				log.Errorf("load pending tx from pool: %v", err)
-				continue
-			}
-			metrics.PendingTxCount(int(transactions))
+		<-time.After(time.Second * time.Duration(countinterval))
+		transactions, err := d.txPool.CountPendingTransactions(d.ctx)
+		if err != nil {
+			log.Errorf("load pending tx from pool: %v", err)
+			continue
 		}
+		metrics.PendingTxCount(int(transactions))
 	}
 }
 
