@@ -2,6 +2,7 @@ package sequencer
 
 import (
 	"context"
+	"github.com/0xPolygonHermez/zkevm-node/sequencer/metrics"
 	"math/big"
 	"time"
 
@@ -63,6 +64,7 @@ func newDBManager(ctx context.Context, config DBManagerCfg, txPool txPool, state
 // Start stars the dbManager routines
 func (d *dbManager) Start() {
 	go d.loadFromPool()
+	go d.countPendingTx()
 	go func() {
 		for {
 			time.Sleep(d.cfg.L2ReorgRetrievalInterval.Duration)
@@ -144,6 +146,21 @@ func (d *dbManager) loadFromPool() {
 			if err != nil {
 				log.Errorf("error adding transaction to worker: %v", err)
 			}
+		}
+	}
+}
+
+func (d *dbManager) countPendingTx() {
+	ticker := time.NewTicker(time.Second * 10)
+	for {
+		select {
+		case <-ticker.C:
+			transactions, err := d.txPool.CountPendingTransactions(d.ctx)
+			if err != nil {
+				log.Errorf("load pending tx from pool: %v", err)
+				continue
+			}
+			metrics.PendingTxCount(int(transactions))
 		}
 	}
 }
