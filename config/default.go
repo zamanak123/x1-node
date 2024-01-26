@@ -44,7 +44,7 @@ MinAllowedGasPriceInterval = "5m"
 PollMinAllowedGasPriceInterval = "15s"
 AccountQueue = 64
 GlobalQueue = 1024
-FreeGasAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+FreeGasAddress = ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]
     [Pool.EffectiveGasPrice]
 	Enabled = false
 	L1GasPriceFactor = 0.25
@@ -93,6 +93,12 @@ MaxNativeBlockHashBlockRange = 60000
 EnableHttpLog = true
 GasLimitFactor = 1
 DisableAPIs = []
+	[RPC.RateLimit]
+		Enabled = false
+		RateLimitApis = []
+		RateLimitCount = 100
+		RateLimitDuration = 1
+		SpecialApis = []
 	[RPC.WebSockets]
 		Enabled = true
 		Host = "0.0.0.0"
@@ -151,7 +157,7 @@ WaitPeriodSendSequence = "5s"
 LastBatchVirtualizationTimeMaxWaitPeriod = "5s"
 MaxBatchesForL1 = 10
 L2Coinbase = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-PrivateKey = {Path = "/pk/sequencer.keystore", Password = "testonly"}
+DAPermitApiPrivateKey = {Path = "/pk/sequencer.keystore", Password = "testonly"}
 UseValidium = true
 GasOffset = 80000
 
